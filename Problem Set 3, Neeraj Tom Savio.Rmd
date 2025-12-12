@@ -1,0 +1,159 @@
+---
+title: "Problem Set 3, POLS 602"
+author: "Neeraj Tom Savio"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+**Part 1:Reading**
+\vspace{0.5 cm}
+
+1. Is the goal of the study causal inference, description, prediction, or something else? Have the authors clearly stated their goals? Describe any strengths or weaknesses in how the authors articulate their research objectives.  
+A: The goal of the study is causal inference. The authors try to determine what causes civil wars: whether it is ethnic and religious grievances or whether it is conditions that allow for insurgencies such as weak state capacity, mountainous terrain, etc. The authors articulate that they are trying to reject the conventional understanding that religious and ethnically diverse states are more likely to descend into civil war, which helps in better understanding the goals of the study.
+
+2. Have the authors sufficiently defined their theoretical and empirical estimands? Discuss what these estimands are and explain how the authors could clarify them if necessary.  
+
+A:  The theoretical estimand for hypothesis 1 is the average effect of diversity on higher risk of civil war. The empirical estimand is the regresssion coefficent of the authors' measure for the probabilistic chance of civil war.  
+
+The theoretical estimand for hypothesis 2 is the average causal effect of higher income per capita on the probability of civil war onset. The empirical estimand is the regression coefficient of the income per capita for the probabilistic chance of civil war.  
+
+The theoretical estimand for hypothesis 3 is the average causal effect of having an ethnic majority and a signficant ethnic minority on the probability for civil war. The empirical estimand is the regression coefficient of measures of ethnic groups for the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 4 is the average causal effect of political liberties on higher risk of civil war. The empirical estimand is the regression coefficient between measures of political liberties of countries and the probabilitic chance of civil war. 
+
+The theoretical estimand for hypothesis 5 is the average causal effect of discriminatory policies in states with minorities on the risk for civil war. The empirical estimand is the regression coefficient of measures of discriminatory policies in states with minorities on the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 6 is the average causal effect of greater income inequality on the chances for civil war. The empirical estimand is the regression coefficient of measure of income inequality on the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 7 is the average causal effect of greater ethnic diversity in countries with  ethnic diversity greater than 5% on the risk of civil war. The empirical estimand is the regression coefficient of measures of greater ethnic diversity on the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 8 is the average causal effect of rough terrain poorly served by road at a distance from the centers of state power, availability of foreign sancturaries and the willingness of local population to work against the insurgents on the risk of civil war. The empirical estimand is the regression coefficient measures on the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 9 is the average causal effect of relative strength of the insurgents on the risk of civil war. The empirical estimand is the reggresion coefficient on the relative strength of the insurgency on the probabilistic chance of civil war. 
+
+The theoretical estimand for hypothesis 10 is the average causal effect of a newly independent state, political instability, government that mixes democratic with non-democratic features, large population, territories separated by water, a supportive diasopora, productive land, and oil producing state on the risk of civil war. The empirical estimand is the regression coefficient of these measures on the probabilitic chance of civil war. 
+
+The theoretical estimand for hypothesis 11 is the average causal effect of political democracy, the presence of civil liberties, higher income inequality, nondiscriminatory linguistic religious policies on the risk of civil war. The empirical estimand is the regression coefficient of these measures on the probabilistic chance of civil war. 
+
+
+3. The way you connect your theoretical estimand to your empirical estimand is known as identification—in other words, what does the research do to ensure that the empirical estimand is a good measure of the theoretical estimand? Describe the authors’ identification strategy.
+
+A: The authors attempt to connect their theoretical and empirical estimands by controlling for confounders. However, they don't convincingly control for every confounder.Their identification strategy could have been better
+
+4. Provide an overall assessment of the paper and its conclusions. Does the identification strategy support the authors’ claims? For example, could the regression coefficients be credibly interpreted as causal effects if causal inference is the goal? Does the model adequately represent the real-world data-generating process? Does the data credibly measure the phenomena being studied?  
+
+A: Overall the paper has some flaws. Its identification strategy is not robust as they do not convincingly control for all the confounders that could bias observational data. Their measurement strategy is also pretty weak as they do not convince that empirical estimands match the theoretical estimands. For example, their argument that per capita income is a proxy for the overall capacities of a state does not make sense.  
+
+5. Despite any weaknesses, can this research still inform our understanding of the world? If so, how?
+
+A: The research performed is still relevant as it helps drive scholarly understanding of the factors that drive civil war. For example, they show that religious or ethnically diverse states do not have an an increased intrinsic propensity toward civil war.  
+
+
+\vspace{0.5 cm}
+
+**Part 2: Data Analysis**
+
+```{r}
+## Introductory Code
+
+rm(list=ls()) #Clearing the environment
+setwd("~/Desktop/POLS 602/R Files") #Setting up the working directory
+library(tidyverse)
+```
+
+1. Load the thermometers.csv data from the data folder on the github repo. Use the birth_year variable to create a new age variable (Note: This survey was taken in 2017).
+```{r}
+#Importing the data
+
+thermometer <- read.csv("https://raw.githubusercontent.com/MLBurnham/pols_602/refs/heads/main/data/thermometers.csv")
+
+thermometer$age <- 2025 - thermometer$birth_year
+
+thm_cln <- thermometer %>%
+  drop_na(ft_black, ft_white, ft_hisp, ft_asian, ft_muslim, ft_jew, ft_christ, ft_fem, ft_immig, ft_gays, ft_unions, ft_police, ft_altright, ft_evang, ft_dem, ft_rep)
+
+head(thm_cln)
+```
+\vspace{0.5 cm}
+
+2. Pick one of the feeling thermometers and one of the categorical demographic variables (sex, race, party_id, or educ). Describe the spread and central tendency of the feeling thermometer both for all observations, and for each category in the demographic variable you chose. Use histograms or density plots to visualize the distribution.
+```{r}
+#Picking sex as the categorical demographic of interest
+#Picking feeling thermometer ft_altright 
+
+#Mean of the selected feeling thermometer
+avg_alt <- mean(thm_cln$ft_altright)
+print(avg_alt)
+#Standard Deviation of the selected feeling thermometer
+sd_alt <- sd(thm_cln$ft_altright)
+print(sd_alt)
+#Disaggregating average feeling thermometer score by sex
+avg_alt_m <- mean(thm_cln$ft_altright[thm_cln$sex == "Male"])
+print(avg_alt_m)
+avg_alt_f <- mean(thm_cln$ft_altright[thm_cln$sex == "Female"])
+print(avg_alt_f)
+#Obtaining standard deviation of the feeling thermometer for each demographic
+#..category
+sd_alt_m <- sd(thm_cln$ft_altright[thm_cln$sex == "Male"])
+print(sd_alt_m)
+sd_alt_f <- sd(thm_cln$ft_altright[thm_cln$sex == "Female"])
+print(sd_alt_f)
+
+
+#Using GGPLOT to create density plots of the distribution of feeling thermometer
+#..scores disaggregated by sex
+ggplot(thm_cln, aes(x = ft_altright, fill = sex)) +
+  geom_density(alpha = 0.4) +
+  theme_minimal() +
+  labs (
+    title = "Feeling Thermometer Distribution for Attitudes Toward Altright Groups",
+    x = "Feeling Thermometer Score",
+    fill = "Sex"
+  )
+```
+
+\vspace{0.5 cm}
+
+3. Fit a regression model to estimate the conditional mean of the feeling thermometer
+for each category in the demographic variable you chose.
+```{r}
+model1 <- lm(thm_cln$ft_altright ~ thm_cln$sex)
+summary(model1)
+```
+\vspace{0.5 cm}
+
+4. Create a new dataframe that only contains rows for Democrats and Republicans. Create a new binary variable for party_id
+```{r}
+thm_new <- thm_cln[!(thm_cln$party_id == "Independent"), ]
+thm_new$dem <- ifelse(thm_new$party_id == "Democrat", 1, 0)
+```
+\vspace{0.5 cm}
+
+5. Use multiple linear regression to build a model that predicts your binary party_id
+variable. Use any combination of variables you like, but you should include at least
+one feeling thermometer and one interaction term. Justify your model.
+```{r}
+model2 <- lm(thm_new$dem ~ thm_new$ft_black + thm_new$age + thm_new$age*thm_new$sex)
+summary(model2)
+```
+Including an interaction term of age with sex in order to examine whether there is a differential impact of age on democratic party membership disaggregated by sex.
+\vspace{0.5 cm}
+
+6. The coefficients in your model represent the change in what?  
+A: The intercept denotes the likelihood that a female member with a feeling thermometer score of 0 toward the black community is associated with the democratic party. The thm_new\$ft_black shows the change in likelihood of democratic association for every 1 score increase in the feeling thermometer toward the black community. The thm_new\$age shows the change in  democratic identification for a 1-unit increase in age for females. The thm_new\$sexMale is the change in  likelihood for males that they will identify with the democratic party. The thm_new\$age:thm_new\$sexMale shows the change in  democratic identification for a 1-unit increase in age for males. 
+\vspace{0.5 cm}
+
+7. Select one of the feeling thermometers in your model and plot how your predicted values change as the feeling thermometer changes. Interpret your results. Can this reasonably be interpreted as a causal effect?
+```{r}
+model3 <- lm(formula = thm_new$dem ~ thm_new$ft_altright)
+summary(model3)
+
+ggplot(thm_new, aes(x = ft_altright, y = dem)) + 
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(
+    x = "Feeling Thermometer: Alt-Right",
+    y = "Dem",
+    title = "Fitted Values from Linear Model"
+  ) +
+  theme_minimal()
+```
+We can't reasonably assume a causal effect as we can't be sure that all confounders have been controlled for and that there is no bias. 
