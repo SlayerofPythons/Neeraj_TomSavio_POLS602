@@ -1,0 +1,116 @@
+---
+title: "Problem Set 4"
+author: "Neeraj Tom Savio"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+**Part 1: Reading**
+\vspace{0.5cm}
+
+1. What is the difference between a confounder and a collider? How should you address each in your models?  
+
+A: Confounders and colliders differ in their directional effects. Confounders affect both the treatment and outcome whereas colliders are affected by both the treatment and outcome. Confounders should be controlled for and colliders shoud not be included in the models. 
+\vspace{0.5cm}
+
+2. How can conditioning on a collider create bias?  
+
+A: Conditioning on a collider opens up a causal path between the treatment and the outcome where one doesn't exist as both X and Y have an effect on Z, so conditioning on Z would introduce bias. 
+\vspace{0.5cm}
+
+3. Why can’t statistical summaries or correlations alone tell us whether to control for a variable?  
+
+A: Statistical summaries and correlations can't tell us about the direction of the relationships between variables. They can't tell us if a variable is a mediator or confounder or collider, therefore we don't know if a variable should be controlled for or not. 
+\vspace{0.5cm}
+
+4. What is meant by a “kitchen sink” regression, and what is wrong with this approach to modeling?  
+
+A: A kitchen sink regression means one where we include all possible predictors in order to explain variation in the model. This is not good because rather than using data to test some theory, we are using the data to fit the theory and thus isn't good science. 
+\vspace{0.5cm}
+
+5. What is a “backdoor path” and how does multiple regression help block these paths?  
+
+A: A backdoor path essentially means the non-causal relationship that is created between X and Y that is created due to a confounder. Multiple relationship helps block these paths by giving us the effect of X on Y conditioned on a constant value of the confounder therefore breaking the non-causal relationship.  
+
+\vspace{0.5cm}
+**Part 2: Simulation**
+\vspace{0.5cm}
+```{r}
+## Introductory Code
+
+rm(list=ls()) #Clearing the environment
+setwd("~/Desktop/POLS 602/R Files") #Setting up the working directory
+library(tidyverse)
+```
+
+For the social causal relationship, I simulate a relationship between relationship between no. of years in education and net worth. I assume all my variables have been converted to standard normal distributions. 
+
+```{r}
+set.seed(6767)
+
+z <- rnorm(1000, 0, 1) #Confounder (Parental Income)
+it <- rnorm(1000, 0, 1) #Exogenous effect on treatment (rainful in cubic meters)
+x <- rnorm(1000, 0, 1)  + z + it  #Treatment (Education) 
+m <- rnorm(1000, 0, 1) + x #Mediator (Yearly income)
+io <- rnorm(1000, 0, 1) #Exogenous effect on outcome (Inheritance in dollars)
+y <- rnorm(1000, 0, 1) + 0.4*x + 0.06*z + 0.01*m + 0.02*io #Outcome variable (Net worth)
+c <- rnorm(1000, 0, 1) + 6*x + 7*y  #Collider (No. of dependents)
+
+pop <- data.frame(
+  years_education = x, 
+  net_worth = y, 
+  parental_income = z, 
+  yearly_income = m, 
+  n_dependents = c, 
+  rainfall = it,
+  inheritance = io)
+```
+\vspace{0.5cm}
+**Question a.**
+\vspace{0.5cm}
+Fit a model that recovers the direct effect of the treatment on the outcome variable.
+Which variables are necessary to recover the direct effect?
+```{r}
+model1 <- lm(y ~ x + m + z, data = pop) #Fitting the linear model 
+summary(model1)
+```
+In order to recover the direct effect, we need to include the mediator and confounder. 
+
+**Question b.**
+\vspace{0.5cm}
+Fit a model that recovers the total effect of the treatment on the outcome variable.
+How does your model change to estimate the total effect?
+\vspace{0.5cm}
+```{r}
+model2 <- lm(y ~ x + z, data = pop)
+summary(model2)
+```
+In order to recover the total effect of the treatment on the outcome variable, we need to drop the mediator from our linear model since the treatment affects the outcome through the mediator. 
+
+Dropping the mediator from the model increases the effect attributed to x. 
+
+**Question c.**
+\vspace{0.5cm}
+How do your results change when you control for the collider, the exogenous
+independent variable, or the instrument (individually, not all simultaneously)?
+\vspace{0.5cm}
+```{r}
+model3 <- lm(y ~ x + io, data = pop) # Controlling for the exogenous.. 
+#..independent variable
+summary(model3)
+```
+Controlling for the exogenous independent variable does not have a lot of effect on the coefficient for x as it is exogenously related to y.
+```{r}
+model4 <- lm(y ~ x + it, data = pop) #Controlling for the instrumental variable
+summary(model4)
+```
+Controlling for the instrumental variable increased the avolsute value of the intercept whereas the coefficient for x was relatively unaffected. 
+```{r}
+model5 <- lm(y ~ x + c, data = pop) # Controlling for the collider
+summary(model5)
+```
+Controlling for the collider increased the absolute value coefficient of x considerably, implying a much greater value for the average value of x on y than actually exists. 
+
+**Question d.**
+\vspace{0.5cm}
+Given the reading and simulation results, how should you choose which variables to include in a model?  
+I would always include confounders. I would include mediators if I want to observe the direct effect of the treatment on the outcome but I would never include a collider. 
